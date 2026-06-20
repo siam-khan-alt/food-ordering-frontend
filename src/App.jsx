@@ -6,6 +6,8 @@ import Register from "./pages/Register";
 import { Toaster } from "react-hot-toast";
 import Menu from "./pages/Menu";
 import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import OrderConfirmation from "./pages/OrderConfirmation";
 
 function App() {
   return (
@@ -17,6 +19,8 @@ function App() {
           <Route path="/" element={<Home />} />,
           <Route path="/menu" element={<Menu />} />,
           <Route path="/cart" element={<Cart />} />,
+          <Route path="/checkout" element={<Checkout />} />,
+          <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
           <Route path="/login" element={<Login />} />,
           <Route path="/register" element={<Register />} />
         </Routes>
