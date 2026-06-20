@@ -2,7 +2,7 @@ import { ArrowRight, Flame } from "lucide-react";
 import Button from "../common/Button";
 export default function Hero() {
   return (
-    <main className="container mx-auto px-6 lg:px-16 py-4 lg:py-8 relative">
+    <main className="container mx-auto px-6 lg:px-16 py-4 lg:py-8 relative overflow-hidden">
       <div className="absolute top-[10%] right-[10%] w-[400px] h-[400px] bg-brand/15 dark:bg-brand/10 rounded-full blur-[120px] -z-10 animate-pulse pointer-events-none" />
 
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
