@@ -5,11 +5,13 @@ import { useAuth } from "../../context/AuthContext";
 import { Sun, Moon, ShoppingCart, LogOut, Menu, X } from "lucide-react";
 import Button from "../common/Button";
 import { showConfirm } from "../common/Toast";
+import { useCart } from "../../context/CartContext";
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { totalItems } = useCart();
 
   const navLinkClass = ({ isActive }) =>
     `relative text-sm font-bold transition py-1 flex items-center gap-1.5 ${
@@ -18,18 +20,25 @@ export default function Navbar() {
         : "text-text-main hover:text-brand"
     }`;
 
-  const renderLinkContent = (label) => ({ isActive }) => (
-    <>
-      {isActive && <img src="/logo.png" alt="" className="w-4 h-4 object-contain" />}
-      <span>{label}</span>
-    </>
-  );
+  const renderLinkContent =
+    (label) =>
+    ({ isActive }) =>
+      (
+        <>
+          {isActive && (
+            <img src="/logo.png" alt="" className="w-4 h-4 object-contain" />
+          )}
+          <span>{label}</span>
+        </>
+      );
 
   return (
     <header className="sticky top-0 z-50 bg-bg-main border-b border-card-border">
       <div className="container mx-auto px-6 lg:px-16 py-4 flex justify-between items-center">
-
-        <Link to="/" className="flex items-center space-x-3 cursor-pointer group">
+        <Link
+          to="/"
+          className="flex items-center space-x-3 cursor-pointer group"
+        >
           <img
             src="/logo.png"
             alt="BiteBox Icon"
@@ -60,61 +69,90 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center space-x-3">
-
           {user?.role === "customer" && (
-            <Link to="/cart">
-              <Button variant="icon" icon={<ShoppingCart className="w-5 h-5" />} />
+            <Link to="/cart" className="relative">
+              <Button
+                variant="icon"
+                icon={<ShoppingCart className="w-5 h-5" />}
+              />
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-brand text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-bg-main">
+                  {totalItems}
+                </span>
+              )}
             </Link>
           )}
-
           <Button
             variant="icon"
             onClick={toggleTheme}
-            icon={theme === "dark" ? (
-              <Sun className="w-5 h-5 text-amber-400" />
-            ) : (
-              <Moon className="w-5 h-5 text-slate-700" />
-            )}
+            icon={
+              theme === "dark" ? (
+                <Sun className="w-5 h-5 text-amber-400" />
+              ) : (
+                <Moon className="w-5 h-5 text-slate-700" />
+              )
+            }
           />
-
           {user ? (
             <Button
               variant="icon"
-              onClick={() => showConfirm("Are you sure you want to logout?", logout)}
+              onClick={() =>
+                showConfirm("Are you sure you want to logout?", logout)
+              }
               icon={<LogOut className="w-5 h-5" />}
               className="hidden sm:flex"
             />
           ) : (
             <Link to="/login" className="hidden sm:block">
-              <Button variant="primary" className="px-5 py-2.5">Login</Button>
+              <Button variant="primary" className="px-5 py-2.5">
+                Login
+              </Button>
             </Link>
           )}
-
           <button
             className="md:hidden p-2 text-text-main"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
-
         </div>
       </div>
 
       {mobileMenuOpen && (
         <div className="md:hidden flex flex-col space-y-4 px-6 pb-4 border-t border-card-border pt-4">
-          <NavLink to="/" className={navLinkClass} onClick={() => setMobileMenuOpen(false)}>
+          <NavLink
+            to="/"
+            className={navLinkClass}
+            onClick={() => setMobileMenuOpen(false)}
+          >
             {renderLinkContent("Home")}
           </NavLink>
-          <NavLink to="/menu" className={navLinkClass} onClick={() => setMobileMenuOpen(false)}>
+          <NavLink
+            to="/menu"
+            className={navLinkClass}
+            onClick={() => setMobileMenuOpen(false)}
+          >
             {renderLinkContent("Menu")}
           </NavLink>
           {user?.role === "customer" && (
-            <NavLink to="/my-orders" className={navLinkClass} onClick={() => setMobileMenuOpen(false)}>
+            <NavLink
+              to="/my-orders"
+              className={navLinkClass}
+              onClick={() => setMobileMenuOpen(false)}
+            >
               {renderLinkContent("My Orders")}
             </NavLink>
           )}
           {user?.role === "admin" && (
-            <NavLink to="/admin" className={navLinkClass} onClick={() => setMobileMenuOpen(false)}>
+            <NavLink
+              to="/admin"
+              className={navLinkClass}
+              onClick={() => setMobileMenuOpen(false)}
+            >
               {renderLinkContent("Admin Panel")}
             </NavLink>
           )}
@@ -122,7 +160,13 @@ export default function Navbar() {
           {user ? (
             <Button
               variant="secondary"
-              onClick={() => showConfirm("Are you sure you want to logout?", logout(),setMobileMenuOpen(false))}
+              onClick={() =>
+                showConfirm(
+                  "Are you sure you want to logout?",
+                  logout(),
+                  setMobileMenuOpen(false)
+                )
+              }
               icon={<LogOut className="w-4 h-4" />}
               className="w-full justify-start px-4 py-2.5"
             >
@@ -130,7 +174,10 @@ export default function Navbar() {
             </Button>
           ) : (
             <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="primary" className="w-full justify-center px-4 py-2.5">
+              <Button
+                variant="primary"
+                className="w-full justify-center px-4 py-2.5"
+              >
                 Login
               </Button>
             </Link>

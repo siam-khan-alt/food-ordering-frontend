@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { Toaster } from "react-hot-toast";
 import Menu from "./pages/Menu";
+import Cart from "./pages/Cart";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />,
           <Route path="/menu" element={<Menu />} />,
+          <Route path="/cart" element={<Cart />} />,
           <Route path="/login" element={<Login />} />,
           <Route path="/register" element={<Register />} />
         </Routes>
