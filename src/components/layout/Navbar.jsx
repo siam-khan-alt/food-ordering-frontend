@@ -4,6 +4,7 @@ import { useTheme } from "../../context/ThemeContext";
 import { useAuth } from "../../context/AuthContext";
 import { Sun, Moon, ShoppingCart, LogOut, Menu, X } from "lucide-react";
 import Button from "../common/Button";
+import { showConfirm } from "../common/Toast";
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
@@ -79,7 +80,7 @@ export default function Navbar() {
           {user ? (
             <Button
               variant="icon"
-              onClick={logout}
+              onClick={() => showConfirm("Are you sure you want to logout?", logout)}
               icon={<LogOut className="w-5 h-5" />}
               className="hidden sm:flex"
             />
@@ -121,7 +122,7 @@ export default function Navbar() {
           {user ? (
             <Button
               variant="secondary"
-              onClick={() => { logout(); setMobileMenuOpen(false); }}
+              onClick={() => showConfirm("Are you sure you want to logout?", logout(),setMobileMenuOpen(false))}
               icon={<LogOut className="w-4 h-4" />}
               className="w-full justify-start px-4 py-2.5"
             >
