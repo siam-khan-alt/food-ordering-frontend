@@ -1,7 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 
-export default function CustomSelect({ icon, value, options, onChange, placeholder }) {
+export default function CustomSelect({
+  icon,
+  value,
+  options,
+  onChange,
+  placeholder,
+  className,
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -15,20 +22,27 @@ export default function CustomSelect({ icon, value, options, onChange, placehold
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const selectedLabel = options.find((opt) => opt.value === value)?.label || placeholder;
+  const selectedLabel =
+    options.find((opt) => opt.value === value)?.label || placeholder;
 
   return (
     <div className="relative" ref={dropdownRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-3 rounded-xl bg-card-bg border border-card-border text-text-main font-bold text-sm hover:border-brand/40 transition min-w-[160px] justify-between"
+        className={`flex items-center gap-2 px-4 py-3 rounded-xl bg-card-bg border border-card-border text-text-main font-bold text-sm hover:border-brand/40 transition justify-between ${
+          className || "min-w-[160px]"
+        }`}
       >
         <span className="flex items-center gap-2">
           {icon}
           {selectedLabel}
         </span>
-        <ChevronDown className={`w-4 h-4 text-muted transition-transform ${isOpen ? "rotate-180" : ""}`} />
+        <ChevronDown
+          className={`w-4 h-4 text-muted transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
       </button>
 
       {isOpen && (

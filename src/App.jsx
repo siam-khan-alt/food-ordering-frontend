@@ -8,6 +8,11 @@ import Menu from "./pages/Menu";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation";
+import MyOrders from "./pages/MyOrders";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminHome from "./pages/admin/AdminHome";
+import ManageFoods from "./pages/admin/ManageFoods";
+import ManageOrders from "./pages/admin/ManageOrders";
 
 function App() {
   return (
@@ -20,9 +25,18 @@ function App() {
           <Route path="/menu" element={<Menu />} />,
           <Route path="/cart" element={<Cart />} />,
           <Route path="/checkout" element={<Checkout />} />,
-          <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
+          <Route path="/my-orders" element={<MyOrders />} />
+          <Route
+            path="/order-confirmation/:orderId"
+            element={<OrderConfirmation />}
+          />
           <Route path="/login" element={<Login />} />,
           <Route path="/register" element={<Register />} />
+          <Route path="/admin" element={<AdminDashboard />}>
+            <Route index element={<AdminHome />} />
+            <Route path="foods" element={<ManageFoods />} />
+            <Route path="orders" element={<ManageOrders />} />
+          </Route>
         </Routes>
       </div>
       <Toaster position="top-right" />

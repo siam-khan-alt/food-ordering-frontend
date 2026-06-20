@@ -27,6 +27,7 @@ export default function Menu() {
 
     fetchFoods();
   }, []);
+console.log(foods);
 
   const handleAddToCart = (food) => {
     const existingCart = JSON.parse(localStorage.getItem("cart")) || [];

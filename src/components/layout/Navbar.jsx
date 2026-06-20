@@ -69,7 +69,7 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center space-x-3">
-          {user?.role === "customer" && (
+          {(!user || user?.role === "customer") && (
             <Link to="/cart" className="relative">
               <Button
                 variant="icon"
@@ -161,11 +161,10 @@ export default function Navbar() {
             <Button
               variant="secondary"
               onClick={() =>
-                showConfirm(
-                  "Are you sure you want to logout?",
-                  logout(),
-                  setMobileMenuOpen(false)
-                )
+                showConfirm("Are you sure you want to logout?", () => {
+                  logout();
+                  setMobileMenuOpen(false);
+                })
               }
               icon={<LogOut className="w-4 h-4" />}
               className="w-full justify-start px-4 py-2.5"
