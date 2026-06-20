@@ -13,6 +13,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminHome from "./pages/admin/AdminHome";
 import ManageFoods from "./pages/admin/ManageFoods";
 import ManageOrders from "./pages/admin/ManageOrders";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
 function App() {
   return (
@@ -23,16 +24,44 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />,
           <Route path="/menu" element={<Menu />} />,
-          <Route path="/cart" element={<Cart />} />,
-          <Route path="/checkout" element={<Checkout />} />,
-          <Route path="/my-orders" element={<MyOrders />} />
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute>
+                <Cart />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute>
+                <Checkout />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-orders"
+            element={
+              <ProtectedRoute>
+                <MyOrders />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/order-confirmation/:orderId"
             element={<OrderConfirmation />}
           />
           <Route path="/login" element={<Login />} />,
           <Route path="/register" element={<Register />} />
-          <Route path="/admin" element={<AdminDashboard />}>
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRole="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<AdminHome />} />
             <Route path="foods" element={<ManageFoods />} />
             <Route path="orders" element={<ManageOrders />} />
