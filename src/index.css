@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-main: #FAFAFA;  
+  --color-text-main: #0F172A;    
+  --color-brand: #DC2626;         
+  --color-brand-hover: #B91C1C;  
+  --color-accent: #16A34A;       
+  --color-card-bg: #FFFFFF;     
+  --color-card-border: #E2E8F0;  
+  --color-muted: #64748B;      
+}
+
+.dark {
+  --color-bg-main: #0B0908;       
+  --color-text-main: #F8FAFC;    
+  --color-brand: #EF4444;     
+  --color-brand-hover: #DC2626;   
+  --color-accent: #22C55E;   
+  
+  --color-card-bg: rgba(22, 18, 17, 0.7); 
+  --color-card-border: rgba(255, 255, 255, 0.06);
+  --color-muted: #94A3B8;
+}
+
+/* গ্লাস মরফিজম ইফেক্ট (আপনার দেওয়া ১৪ পিক্সেলটাই বেস্ট) */
+.glass-effect {
+  backdrop-filter: blur(14px);
+}
