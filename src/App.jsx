@@ -14,6 +14,7 @@ import AdminHome from "./pages/admin/AdminHome";
 import ManageFoods from "./pages/admin/ManageFoods";
 import ManageOrders from "./pages/admin/ManageOrders";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import Footer from "./components/layout/Footer";
 
 function App() {
   return (
@@ -67,6 +68,7 @@ function App() {
             <Route path="orders" element={<ManageOrders />} />
           </Route>
         </Routes>
+        <Footer/>
       </div>
       <Toaster position="top-right" />
     </BrowserRouter>
