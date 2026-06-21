@@ -7,58 +7,44 @@ import CartItem from "../components/cart/CartItem";
 import CartSummary from "../components/cart/CartSummary";
 import Button from "../components/common/Button";
 import { showSuccess, showError } from "../components/common/Toast";
+import { useCart } from "../context/CartContext";
 
 export default function Cart() {
-  const [cartItems, setCartItems] = useState([]);
+  const {
+    cartItems,
+    addToCart,
+    updateQuantity,
+    removeFromCart,
+    totalItems,
+    totalAmount,
+  } = useCart();
   const [suggestedFoods, setSuggestedFoods] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const loadCart = () => {
-      const cart = JSON.parse(localStorage.getItem("cart")) || [];
-      setCartItems(cart);
-    };
-
     const fetchSuggestions = async () => {
       try {
         const res = await API.get("/food/all");
-        const cart = JSON.parse(localStorage.getItem("cart")) || [];
-        const cartIds = cart.map((item) => item._id);
+        const cartIds = cartItems.map((item) => item._id);
         setSuggestedFoods(res.data.filter((food) => !cartIds.includes(food._id)).slice(0, 4));
       } catch (err) {
         console.error(err.message);
       }
     };
 
-    loadCart();
     fetchSuggestions();
-  }, []);
-
-  const updateQuantity = (foodId, change) => {
-    const updatedCart = cartItems
-      .map((item) => (item._id === foodId ? { ...item, quantity: item.quantity + change } : item))
-      .filter((item) => item.quantity > 0);
-    setCartItems(updatedCart);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
-  };
+  }, [cartItems]);
 
   const removeItem = (foodId) => {
-    const updatedCart = cartItems.filter((item) => item._id !== foodId);
-    setCartItems(updatedCart);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    removeFromCart(foodId);
     showSuccess("Item removed from cart");
   };
 
   const handleAddSuggested = (food) => {
-    const updatedCart = [...cartItems, { ...food, quantity: 1 }];
-    setCartItems(updatedCart);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    addToCart(food);
     setSuggestedFoods(suggestedFoods.filter((f) => f._id !== food._id));
     showSuccess(`${food.name} added to cart!`);
   };
-
-  const totalAmount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleCheckout = () => {
     if (cartItems.length === 0) {

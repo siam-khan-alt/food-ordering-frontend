@@ -4,8 +4,10 @@ import API from "../api/axios";
 import FoodCard from "../components/food/FoodCard";
 import CustomSelect from "../components/common/CustomSelect";
 import { showSuccess, showError } from "../components/common/Toast";
+import { useCart } from "../context/CartContext";
 
 export default function Menu() {
+  const { addToCart } = useCart();
   const [foods, setFoods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,19 +31,7 @@ export default function Menu() {
   }, []);
 
   const handleAddToCart = (food) => {
-    const existingCart = JSON.parse(localStorage.getItem("cart")) || [];
-    const existingItem = existingCart.find((item) => item._id === food._id);
-
-    let updatedCart;
-    if (existingItem) {
-      updatedCart = existingCart.map((item) =>
-        item._id === food._id ? { ...item, quantity: item.quantity + 1 } : item
-      );
-    } else {
-      updatedCart = [...existingCart, { ...food, quantity: 1 }];
-    }
-
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    addToCart(food);
     showSuccess(`${food.name} added to cart!`);
   };
 

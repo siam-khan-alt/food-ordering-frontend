@@ -44,7 +44,7 @@ export default function Checkout() {
         return_url: `${window.location.origin}/order-confirmation/${order._id}`,
         cancel_url: `${window.location.origin}/checkout`,
 
-        notify_url: `${import.meta.env.VITE_BACKEND_URL}/api/payment/notify`,
+        notify_url: `${import.meta.env.VITE_BACKEND_URL}/payment/notify`,
         order_id: order._id,
         items: "Food Order - BiteBox",
         amount: amount,
