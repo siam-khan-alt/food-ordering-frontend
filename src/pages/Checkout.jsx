@@ -6,6 +6,7 @@ import API from "../api/axios";
 import Button from "../components/common/Button";
 import { showError } from "../components/common/Toast";
 import { CreditCard } from "lucide-react";
+import { loadPayHereScript, buildCustomerDetails } from "../utils/payhere";
 
 export default function Checkout() {
   const { cartItems, totalAmount, clearCart } = useCart();
@@ -22,6 +23,8 @@ export default function Checkout() {
     setLoading(true);
 
     try {
+      const payhere = await loadPayHereScript();
+
       const orderItems = cartItems.map((item) => ({
         foodItemId: item._id,
         quantity: item.quantity,
@@ -31,52 +34,60 @@ export default function Checkout() {
       const order = orderRes.data.order;
 
       const hashRes = await API.post("/payment/generate-hash", {
-        orderId: order._id,
-        amount: totalAmount,
+        orderId: String(order._id),
+        amount: order.totalAmount,
         currency: "LKR",
       });
 
-      const { merchantId, hash, amount, currency } = hashRes.data;
+      const { merchantId, hash, orderId, amount, currency } = hashRes.data;
+      const customer = buildCustomerDetails(user);
 
       const payment = {
         sandbox: true,
-        merchant_id: merchantId,
-        return_url: `${window.location.origin}/order-confirmation/${order._id}`,
-        cancel_url: `${window.location.origin}/checkout`,
-
+        merchant_id: String(merchantId),
+        return_url: undefined,
+        cancel_url: undefined,
         notify_url: `${import.meta.env.VITE_BACKEND_URL}/payment/notify`,
-        order_id: order._id,
+        order_id: String(orderId),
         items: "Food Order - BiteBox",
-        amount: amount,
-        currency: currency,
-        hash: hash,
-        first_name: user?.name?.split(" ")[0] || "Customer",
-        last_name: user?.name?.split(" ")[1] || "Customer",
-        email: user?.email || "customer@example.com",
-        phone: "0770000000",
-        address: "Dhaka",
-        city: "Dhaka",
-        country: "Bangladesh",
+        amount: String(amount),
+        currency: String(currency).toUpperCase(),
+        hash: String(hash),
+        first_name: customer.first_name,
+        last_name: customer.last_name,
+        email: customer.email,
+        phone: customer.phone,
+        address: customer.address,
+        city: customer.city,
+        country: customer.country,
       };
 
-      window.payhere.onCompleted = function () {
+      payhere.onCompleted = function () {
         clearCart();
         navigate(`/order-confirmation/${order._id}`);
       };
 
-      window.payhere.onDismissed = function () {
+      payhere.onDismissed = function () {
         showError("Payment was cancelled");
         setLoading(false);
       };
 
-      window.payhere.onError = function () {
-        showError("Payment failed. Please try again.");
+      payhere.onError = function (error) {
+        console.error("PayHere error:", error);
+        showError(
+          typeof error === "string"
+            ? error
+            : "Payment failed. Please try again."
+        );
         setLoading(false);
       };
-
-      window.payhere.startPayment(payment);
+      console.log("PAYMENT OBJECT BEING SENT:", payment);
+      payhere.startPayment(payment);
     } catch (err) {
-      showError(err.response?.data?.message || "Checkout failed");
+      console.error("Checkout error:", err);
+      showError(
+        err.response?.data?.message || err.message || "Checkout failed"
+      );
       setLoading(false);
     }
   };
