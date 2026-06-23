@@ -81,7 +81,7 @@ export default function Checkout() {
         );
         setLoading(false);
       };
-      console.log("PAYMENT OBJECT BEING SENT:", payment);
+
       payhere.startPayment(payment);
     } catch (err) {
       console.error("Checkout error:", err);
