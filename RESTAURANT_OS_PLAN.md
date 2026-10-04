@@ -7,8 +7,8 @@
 
 - [x] M1: Tenant core — types, mock tenants, TenantContext, canAccess — `2026-10-04` mock
 - [x] M2: Super Admin panel — tenants CRUD (mock) — `2026-10-04` mock
-- [ ] M3: Operation mode guard
-- [ ] M4: Module toggles per tenant
+- [x] M3: Operation mode guard — Navbar, AdminSidebar, menu/cart/checkout hidden by mode — `2026-10-04` mock
+- [x] M4: Module toggles per tenant (Super Admin control) — `2026-10-04` mock
 - [ ] M5: Guest checkout (no login)
 - [ ] M6: QR Table Session (token, expiry, occupancy)
 - [ ] M7: POS Walk-in

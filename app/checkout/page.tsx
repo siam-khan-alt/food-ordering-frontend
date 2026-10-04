@@ -1,4 +1,6 @@
 "use client";
+import { useTenant } from "@/context/TenantContext";
+import { canAccess } from "@/lib/tenancy";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -11,11 +13,18 @@ import { showError, showSuccess } from "@/components/common/Toast";
 import { CreditCard } from "lucide-react";
 
 export default function Checkout() {
+  const { tenant } = useTenant();
   const { cartItems, totalAmount, clearCart } = useCart();
   const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [method, setMethod] = useState<"dummy" | "cod">("dummy");
+
+  if (!canAccess(tenant, "online_order")) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center px-6"><p className="text-muted font-bold">Online ordering disabled for {tenant.name}</p></div>
+    );
+  }
 
   const handlePayment = async () => {
     if (!user) {

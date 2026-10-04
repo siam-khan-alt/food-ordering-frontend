@@ -6,16 +6,21 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import { useTenant } from "@/context/TenantContext";
+import { canAccess } from "@/lib/tenancy";
 import { Sun, Moon, ShoppingCart, LogOut, Menu, X } from "lucide-react";
 import Button from "@/components/common/Button";
 import { showConfirm } from "@/components/common/Toast";
+import TenantSwitcher from "@/components/common/TenantSwitcher";
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const { totalItems } = useCart();
+  const { tenant } = useTenant();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const showOnline = canAccess(tenant, "online_order");
 
   const navLinkClass = (href: string) =>
     `relative text-sm font-bold transition py-1 flex items-center gap-1.5 ${
@@ -46,13 +51,17 @@ export default function Navbar() {
 
         <div className="hidden md:flex items-center space-x-8">
           <NavItem href="/" label="Home" />
-          <NavItem href="/menu" label="Menu" />
-          {user?.role === "customer" && <NavItem href="/my-orders" label="My Orders" />}
+          {showOnline && <NavItem href="/menu" label="Menu" />}
+          {showOnline && user?.role === "customer" && <NavItem href="/my-orders" label="My Orders" />}
           {user?.role === "admin" && <NavItem href="/admin" label="Admin Panel" />}
+          {user?.role === "super_admin" && <NavItem href="/super-admin" label="Super Admin" />}
         </div>
 
         <div className="flex items-center space-x-3">
-          {(!user || user?.role === "customer") && (
+          <div className="hidden lg:block">
+            <TenantSwitcher />
+          </div>
+          {showOnline && (!user || user?.role === "customer") && (
             <Link href="/cart" className="relative">
               <Button variant="icon" icon={<ShoppingCart className="w-5 h-5" />} aria-label="Cart" />
               {totalItems > 0 && (
@@ -89,10 +98,14 @@ export default function Navbar() {
 
       {mobileMenuOpen && (
         <div className="md:hidden flex flex-col space-y-4 px-6 pb-4 border-t border-card-border pt-4">
+          <div className="lg:hidden">
+            <TenantSwitcher />
+          </div>
           <NavItem href="/" label="Home" />
-          <NavItem href="/menu" label="Menu" />
-          {user?.role === "customer" && <NavItem href="/my-orders" label="My Orders" />}
+          {showOnline && <NavItem href="/menu" label="Menu" />}
+          {showOnline && user?.role === "customer" && <NavItem href="/my-orders" label="My Orders" />}
           {user?.role === "admin" && <NavItem href="/admin" label="Admin Panel" />}
+          {user?.role === "super_admin" && <NavItem href="/super-admin" label="Super Admin" />}
 
           {user ? (
             <Button

@@ -1,4 +1,6 @@
 "use client";
+import { useTenant } from "@/context/TenantContext";
+import { canAccess } from "@/lib/tenancy";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Package, ShoppingBag } from "lucide-react";
@@ -20,6 +22,7 @@ const paymentColors = {
 };
 
 export default function MyOrders() {
+  const { tenant: _tenant } = useTenant();
   const { user } = useAuth();
   const [orders, setOrders] = useState<import('@/types').Order[]>([]);
   const [loading, setLoading] = useState(true);

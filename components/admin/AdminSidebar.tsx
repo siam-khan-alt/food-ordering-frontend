@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, UtensilsCrossed, ClipboardList } from "lucide-react";
+import { LayoutDashboard, UtensilsCrossed, ClipboardList, ShoppingCart, QrCode, ChefHat } from "lucide-react";
+import { useTenant } from "@/context/TenantContext";
+import { canAccess } from "@/lib/tenancy";
 
 export default function AdminSidebar() {
   const pathname = usePathname();
-  const linkClass = (href: string, exact = false) => {
-    const active = exact ? pathname === href : pathname === href || pathname.startsWith(href + "/");
-    // dashboard exact match vs foods/orders prefix
+  const { tenant } = useTenant();
+  const linkClass = (href: string) => {
     const isActive = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
     return `flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition ${isActive ? "bg-brand text-white" : "text-text-main hover:bg-card-bg"}`;
   };
@@ -27,6 +28,24 @@ export default function AdminSidebar() {
         <ClipboardList className="w-4 h-4" />
         Manage Orders
       </Link>
+      {canAccess(tenant, "pos") && (
+        <Link href="/admin/pos" className={linkClass("/admin/pos")}>
+          <ShoppingCart className="w-4 h-4" />
+          POS
+        </Link>
+      )}
+      {canAccess(tenant, "table") && (
+        <Link href="/admin/tables" className={linkClass("/admin/tables")}>
+          <QrCode className="w-4 h-4" />
+          Tables
+        </Link>
+      )}
+      {canAccess(tenant, "kds") && (
+        <Link href="/admin/kitchen" className={linkClass("/admin/kitchen")}>
+          <ChefHat className="w-4 h-4" />
+          Kitchen
+        </Link>
+      )}
     </aside>
   );
 }
