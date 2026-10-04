@@ -11,7 +11,7 @@
 - [x] M4: Module toggles per tenant (Super Admin control) — `2026-10-04` mock
 - [x] M5: Guest checkout (no login) + phone tracking — `2026-10-04` mock
 - [x] M6: QR Table Session — token 2h, occupancy, rate limit, /t/[tableId] — `2026-10-04` mock
-- [ ] M7: POS Walk-in
+- [x] M7: POS Walk-in — /admin/pos walk-in + table select + bill — `2026-10-04` mock
 - [ ] M8: Table Grid + KDS
 - [ ] M9: Polish & demo
 
