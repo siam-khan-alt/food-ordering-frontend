@@ -13,7 +13,7 @@
 - [x] M6: QR Table Session — token 2h, occupancy, rate limit, /t/[tableId] — `2026-10-04` mock
 - [x] M7: POS Walk-in — /admin/pos walk-in + table select + bill — `2026-10-04` mock
 - [x] M8: Table Grid + KDS — /admin/tables (T1-T12 + QR link) + /admin/kitchen (Placed/Preparing/Ready) — `2026-10-04` mock
-- [ ] M9: Polish & demo
+- [x] M9: Polish & demo — backend handoff doc + 19 routes build green — `2026-10-04`
 
 > Each M -> 1 commit `[Setup]/[Feature]:` + MD update + `npm run build` green before next.
 
@@ -205,4 +205,43 @@ Tablet e 3 tab open: `ruposhi (hybrid)`, `cloud (online_only)`, `deshi (pos_only
 *   Super Admin theke module on/off — same codebase, feature flag.
 *   First demo tenants: 3 ta ready rakhbo.
 
-Ready hole M1 `TenantContext` theke start korbo — `ok` dile branch `feature/super-admin` khule kaj shuru korbo.
+---
+
+## 13. Backend Handoff — Django + PostgreSQL (Hands-on Next)
+
+**Mock -> Real:** Ekhn sob `lib/mocks/*` + `lib/api/*` mock. Backend ready hole adapter replace:
+
+```
+lib/api/food.ts:  getFoods() -> fetch(`${NEXT_PUBLIC_API_URL}/food/all?tenant=${slug}`)
+lib/api/auth.ts:  login() -> POST /auth/login (returns JWT, role)
+lib/api/orders.ts: createOrder() -> POST /order/create (tenant header X-Tenant-Slug)
+lib/api/tenant.ts: getTenants() -> GET /tenants (super_admin only)
+lib/tenancy.ts:   getCurrentTenant() -> GET /tenants/me (from JWT)
+lib/qr.ts:        move token logic to backend (table_sessions table) + expiry via DB
+```
+
+**DB (PostgreSQL) per `database.md`:**
+```sql
+tenants(id, slug unique, name, operation_mode check, modules JSONB, status)
+users(id, tenant_id FK, role check, name, email unique, password hash)
+tables(id, tenant_id FK, table_no, qr_token, expires_at, occupied bool)
+orders(id, tenant_id FK, source, order_type, table_no nullable, total_amount ...)
+```
+
+**Steps hands-on:** `backend/config/settings.py` -> `tenants` app + `tables` model, migrate, seed 3 tenants, wire `X-Tenant-Slug` middleware, JWT with tenant claim.
+
+## Progress (final)
+
+- [x] M1 Tenant core — done
+- [x] M2 Super Admin CRUD — done
+- [x] M3 Mode guard — done
+- [x] M4 Module toggles — done
+- [x] M5 Guest checkout — done
+- [x] M6 QR Session — done
+- [x] M7 POS — done
+- [x] M8 Tables + KDS — done
+- [x] M9 Polish — this doc + build green `19 routes`
+
+**Demo tenants ready:** `ruposhi` (hybrid), `cloud-kitchen` (online_only), `deshi-dine` (pos_only) + `superadmin@bitebox.com / super123`
+
+**Next:** branch `feature/restaurant-os-10-10` -> PR -> merge to `main` -> Django backend start.
