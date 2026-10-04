@@ -19,6 +19,7 @@ export default function Checkout() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [method, setMethod] = useState<"dummy" | "cod">("dummy");
+  const [guest, setGuest] = useState({ name: "", phone: "", address: "" });
 
   if (!canAccess(tenant, "online_order")) {
     return (
@@ -27,14 +28,19 @@ export default function Checkout() {
   }
 
   const handlePayment = async () => {
-    if (!user) {
-      showError("Please login to checkout");
-      router.push("/login");
-      return;
-    }
     if (cartItems.length === 0) {
       showError("Your cart is empty");
       return;
+    }
+    let customer: { _id: string; name: string; email: string };
+    if (user) {
+      customer = { _id: user._id, name: user.name, email: user.email };
+    } else {
+      if (!guest.name || !guest.phone) {
+        showError("Please enter name and phone for guest checkout");
+        return;
+      }
+      customer = { _id: `guest_${Date.now()}`, name: guest.name, email: `${guest.phone}@guest.local` };
     }
 
     setLoading(true);
@@ -44,7 +50,7 @@ export default function Checkout() {
         quantity: item.quantity,
       }));
 
-      const { order } = await createOrder(orderItems, { _id: user._id, name: user.name, email: user.email });
+      const { order } = await createOrder(orderItems, customer);
 
       await processDummyPayment({ orderId: order._id, amount: order.totalAmount, method });
 
@@ -76,6 +82,18 @@ export default function Checkout() {
           <span className="text-brand">৳{totalAmount}</span>
         </div>
       </div>
+
+      {!user && (
+        <div className="bg-card-bg border border-card-border rounded-2xl p-6 mb-6">
+          <h3 className="font-black text-text-main mb-3">Guest Details (No login required)</h3>
+          <div className="grid gap-3">
+            <input placeholder="Your Name *" value={guest.name} onChange={(e) => setGuest({ ...guest, name: e.target.value })} className="px-4 py-3 rounded-xl bg-card-bg border border-card-border text-text-main placeholder-muted" />
+            <input placeholder="Phone *" value={guest.phone} onChange={(e) => setGuest({ ...guest, phone: e.target.value })} className="px-4 py-3 rounded-xl bg-card-bg border border-card-border text-text-main placeholder-muted" />
+            <input placeholder="Address (for delivery)" value={guest.address} onChange={(e) => setGuest({ ...guest, address: e.target.value })} className="px-4 py-3 rounded-xl bg-card-bg border border-card-border text-text-main placeholder-muted" />
+            <p className="text-xs text-muted">Login optional — guest orders tracked by phone. <a href="/login" className="text-brand underline">Login to save history</a></p>
+          </div>
+        </div>
+      )}
 
       <div className="bg-card-bg border border-card-border rounded-2xl p-6 mb-6">
         <h3 className="font-black text-text-main mb-3">Payment Method (Dummy)</h3>
