@@ -12,7 +12,7 @@
 - [x] M5: Guest checkout (no login) + phone tracking — `2026-10-04` mock
 - [x] M6: QR Table Session — token 2h, occupancy, rate limit, /t/[tableId] — `2026-10-04` mock
 - [x] M7: POS Walk-in — /admin/pos walk-in + table select + bill — `2026-10-04` mock
-- [ ] M8: Table Grid + KDS
+- [x] M8: Table Grid + KDS — /admin/tables (T1-T12 + QR link) + /admin/kitchen (Placed/Preparing/Ready) — `2026-10-04` mock
 - [ ] M9: Polish & demo
 
 > Each M -> 1 commit `[Setup]/[Feature]:` + MD update + `npm run build` green before next.
