@@ -10,7 +10,7 @@
 - [x] M3: Operation mode guard — Navbar, AdminSidebar, menu/cart/checkout hidden by mode — `2026-10-04` mock
 - [x] M4: Module toggles per tenant (Super Admin control) — `2026-10-04` mock
 - [x] M5: Guest checkout (no login) + phone tracking — `2026-10-04` mock
-- [ ] M6: QR Table Session (token, expiry, occupancy)
+- [x] M6: QR Table Session — token 2h, occupancy, rate limit, /t/[tableId] — `2026-10-04` mock
 - [ ] M7: POS Walk-in
 - [ ] M8: Table Grid + KDS
 - [ ] M9: Polish & demo
