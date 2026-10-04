@@ -4,6 +4,7 @@ import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
+import { TenantProvider } from "@/context/TenantContext";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
@@ -17,14 +18,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-bg-main text-text-main font-sans antialiased transition-colors duration-300">
         <ThemeProvider>
-          <AuthProvider>
-            <CartProvider>
-              <Navbar />
-              {children}
-              <Footer />
-              <Toaster position="top-right" />
-            </CartProvider>
-          </AuthProvider>
+          <TenantProvider>
+            <AuthProvider>
+              <CartProvider>
+                <Navbar />
+                {children}
+                <Footer />
+                <Toaster position="top-right" />
+              </CartProvider>
+            </AuthProvider>
+          </TenantProvider>
         </ThemeProvider>
       </body>
     </html>

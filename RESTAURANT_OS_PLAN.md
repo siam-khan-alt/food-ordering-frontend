@@ -1,6 +1,21 @@
 # BiteBox — Restaurant OS + Super Admin (SaaS) Plan
 
 > Goal: BiteBox ke **portfolio + real restaurant demo** er jonno **Restaurant Software** banano. Ek code-base diye jekono restaurant ke module-base software dewa jabe. Super Admin control korbe kon tenant (restaurant) kon module pabe. Prothom 3 ta operation mode diye start.
+> **Mock-first:** Ekhn sob `lib/mocks` + `localStorage` — pore Django + PostgreSQL hands-on backend e replace hobe (adapter pattern).
+
+## Progress (10/10 to Standard)
+
+- [x] M1: Tenant core — types, mock tenants, TenantContext, canAccess — `2026-10-04` mock
+- [ ] M2: Super Admin panel — tenants CRUD
+- [ ] M3: Operation mode guard
+- [ ] M4: Module toggles per tenant
+- [ ] M5: Guest checkout (no login)
+- [ ] M6: QR Table Session (token, expiry, occupancy)
+- [ ] M7: POS Walk-in
+- [ ] M8: Table Grid + KDS
+- [ ] M9: Polish & demo
+
+> Each M -> 1 commit `[Setup]/[Feature]:` + MD update + `npm run build` green before next.
 
 ---
 
