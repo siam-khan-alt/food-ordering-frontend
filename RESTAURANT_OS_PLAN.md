@@ -6,7 +6,7 @@
 ## Progress (10/10 to Standard)
 
 - [x] M1: Tenant core — types, mock tenants, TenantContext, canAccess — `2026-10-04` mock
-- [ ] M2: Super Admin panel — tenants CRUD
+- [x] M2: Super Admin panel — tenants CRUD (mock) — `2026-10-04` mock
 - [ ] M3: Operation mode guard
 - [ ] M4: Module toggles per tenant
 - [ ] M5: Guest checkout (no login)
