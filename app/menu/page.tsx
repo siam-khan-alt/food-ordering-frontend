@@ -1,6 +1,4 @@
 "use client";
-import { useTenant } from "@/context/TenantContext";
-import { canAccess } from "@/lib/tenancy";
 import { useSearchParams } from "next/navigation";
 import type { Food } from "@/types";
 import { useState, useEffect } from "react";
@@ -12,7 +10,6 @@ import { showSuccess, showError } from "@/components/common/Toast";
 import { useCart } from "@/context/CartContext";
 
 export default function Menu() {
-  const { tenant } = useTenant();
   const { addToCart } = useCart();
   const [foods, setFoods] = useState<Food[]>([]);
   const [loading, setLoading] = useState(true);

@@ -13,37 +13,36 @@ function setSessions(s: Record<string, TableSession>) {
   if (typeof window !== "undefined") localStorage.setItem(SESSIONS_KEY, JSON.stringify(s));
 }
 
-export function generateTableToken(tableNo: string, tenantSlug: string): TableSession {
+export function generateTableToken(tableNo: string): TableSession {
   const token = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
   const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(); // 2h
-  const session: TableSession = { tableNo, token, expiresAt, occupied: true, tenantSlug };
+  const session: TableSession = { tableNo, token, expiresAt, occupied: true };
   const sessions = getSessions();
-  sessions[`${tenantSlug}:${tableNo}`] = session;
+  sessions[tableNo] = session;
   setSessions(sessions);
   return session;
 }
 
-export function getTableSession(tableNo: string, tenantSlug: string): TableSession | null {
+export function getTableSession(tableNo: string): TableSession | null {
   const sessions = getSessions();
-  const key = `${tenantSlug}:${tableNo}`;
-  const s = sessions[key];
+  const s = sessions[tableNo];
   if (!s) return null;
   if (new Date(s.expiresAt).getTime() < Date.now()) {
     // expired
-    delete sessions[key];
+    delete sessions[tableNo];
     setSessions(sessions);
     return null;
   }
   return s;
 }
 
-export function validateTableToken(tableNo: string, token: string, tenantSlug: string): boolean {
-  const s = getTableSession(tableNo, tenantSlug);
+export function validateTableToken(tableNo: string, token: string): boolean {
+  const s = getTableSession(tableNo);
   if (!s) return false;
   if (s.token !== token) return false;
   if (!s.occupied) return false;
-  // rate limit: max 3 validates per minute
-  const rateKey = `rate:${tenantSlug}:${tableNo}`;
+  // rate limit: max 5 validates per minute
+  const rateKey = `rate:${tableNo}`;
   const raw = localStorage.getItem(RATE_KEY);
   const rates: Record<string, number[]> = raw ? JSON.parse(raw) : {};
   const now = Date.now();
@@ -55,12 +54,12 @@ export function validateTableToken(tableNo: string, token: string, tenantSlug: s
   return true;
 }
 
-export function releaseTable(tableNo: string, tenantSlug: string) {
+export function releaseTable(tableNo: string) {
   const sessions = getSessions();
-  delete sessions[`${tenantSlug}:${tableNo}`];
+  delete sessions[tableNo];
   setSessions(sessions);
 }
 
-export function occupyTable(tableNo: string, tenantSlug: string): TableSession {
-  return generateTableToken(tableNo, tenantSlug);
+export function occupyTable(tableNo: string): TableSession {
+  return generateTableToken(tableNo);
 }

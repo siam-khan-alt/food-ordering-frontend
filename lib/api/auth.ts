@@ -8,7 +8,17 @@ function getStoredUsers(): (User & { password: string })[] {
   const saved = localStorage.getItem("mock_users");
   if (saved) {
     try {
-      return JSON.parse(saved);
+      const stored = JSON.parse(saved) as (User & { password: string })[];
+      // merge: ensure new seed roles (e.g. staff) exist even with old cache
+      let changed = false;
+      for (const seed of mockUsers) {
+        if (!stored.find((u) => u.email === seed.email)) {
+          stored.push(seed);
+          changed = true;
+        }
+      }
+      if (changed) localStorage.setItem("mock_users", JSON.stringify(stored));
+      return stored;
     } catch {
       return [...mockUsers];
     }

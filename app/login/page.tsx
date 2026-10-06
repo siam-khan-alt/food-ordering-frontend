@@ -20,14 +20,15 @@ export default function Login() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const quickLogin = (type: string) => {
-    if (type === "admin") {
-      setFormData({ email: "admin@test.com", password: "admin123" });
-      showSuccess("Demo Admin credentials filled! Click Login.");
-    } else {
-      setFormData({ email: "siam@test.com", password: "123456" });
-      showSuccess("Demo Customer credentials filled! Click Login.");
-    }
+  const quickLogin = (type: "customer" | "admin" | "super_admin" | "staff") => {
+    const creds = {
+      customer: { email: "siam@test.com", password: "123456", label: "Customer" },
+      admin: { email: "admin@test.com", password: "admin123", label: "Admin" },
+      super_admin: { email: "superadmin@bitebox.com", password: "super123", label: "Super Admin" },
+      staff: { email: "staff@test.com", password: "staff123", label: "Staff" },
+    }[type];
+    setFormData({ email: creds.email, password: creds.password });
+    showSuccess(`Demo ${creds.label} credentials filled! Click Login.`);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,6 +43,10 @@ export default function Login() {
 
       if (res.user.role === "admin") {
         router.push("/admin");
+      } else if (res.user.role === "super_admin") {
+        router.push("/super-admin");
+      } else if (res.user.role === "staff") {
+        router.push("/admin/pos");
       } else {
         router.push("/");
       }
@@ -97,11 +102,11 @@ export default function Login() {
           </Button>
         </form>
 
-        <div className="flex gap-3 mt-4">
+        <div className="grid grid-cols-2 gap-3 mt-4">
           <Button
             type="button"
             variant="secondary"
-            className="flex-1 justify-center text-xs"
+            className="justify-center text-xs"
             onClick={() => quickLogin("customer")}
           >
             Demo Customer
@@ -109,10 +114,26 @@ export default function Login() {
           <Button
             type="button"
             variant="secondary"
-            className="flex-1 justify-center text-xs"
+            className="justify-center text-xs"
             onClick={() => quickLogin("admin")}
           >
             Demo Admin
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            className="justify-center text-xs"
+            onClick={() => quickLogin("super_admin")}
+          >
+            Demo Super Admin
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            className="justify-center text-xs"
+            onClick={() => quickLogin("staff")}
+          >
+            Demo Staff
           </Button>
         </div>
 

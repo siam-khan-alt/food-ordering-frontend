@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useSearchParams } from "next/navigation";
-import { useTenant } from "@/context/TenantContext";
+import { useRestaurant } from "@/context/RestaurantContext";
 import { getTableSession, validateTableToken } from "@/lib/qr";
 import { useCart } from "@/context/CartContext";
 import { getFoods } from "@/lib/api/food";
@@ -17,7 +17,7 @@ export default function QRTablePage() {
   const { tableId } = useParams() as { tableId: string };
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  const { tenant } = useTenant();
+  const { config } = useRestaurant();
   const { addToCart, cartItems, clearCart } = useCart();
   const router = useRouter();
   const [foods, setFoods] = useState<Food[]>([]);
@@ -28,10 +28,10 @@ export default function QRTablePage() {
       setValid(false);
       return;
     }
-    const ok = validateTableToken(tableId, token, tenant.slug);
+    const ok = validateTableToken(tableId, token);
     setValid(ok);
     if (ok) getFoods().then(setFoods);
-  }, [tableId, token, tenant.slug]);
+  }, [tableId, token]);
 
   const handleAdd = (f: Food) => {
     addToCart(f);
@@ -64,7 +64,7 @@ export default function QRTablePage() {
     <div className="container mx-auto px-6 lg:px-16 py-8">
       <div className="bg-brand/10 border border-brand/20 rounded-2xl p-4 mb-6 text-center">
         <h1 className="text-2xl font-black text-text-main">Table {tableId}</h1>
-        <p className="text-xs text-muted">Tenant: {tenant.name} ({tenant.slug}) — QR valid 2h • One order per session • Outside scan blocked</p>
+        <p className="text-xs text-muted">{config.name} — QR valid 2h • One order per session • Outside scan blocked</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">

@@ -1,6 +1,6 @@
 "use client";
-import { useTenant } from "@/context/TenantContext";
-import { canAccess } from "@/lib/tenancy";
+import { useRestaurant } from "@/context/RestaurantContext";
+import { canAccess } from "@/lib/restaurant";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {  Sparkles } from "lucide-react";
@@ -13,7 +13,7 @@ import { showSuccess, showError } from "@/components/common/Toast";
 import { useCart } from "@/context/CartContext";
 
 export default function Cart() {
-  const { tenant } = useTenant();
+  const { config } = useRestaurant();
   const {
     cartItems,
     addToCart,
@@ -51,9 +51,9 @@ export default function Cart() {
   };
 
   const handleCheckout = () => {
-    if (!canAccess(tenant, "online_order")) {
+    if (!canAccess(config, "online_order")) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center px-6"><p className="text-muted font-bold">Online ordering disabled for {tenant.name} ({tenant.operationMode})</p></div>
+      <div className="min-h-[60vh] flex items-center justify-center px-6"><p className="text-muted font-bold">Online ordering disabled for {config.name} ({config.operationMode})</p></div>
     );
   }
 
@@ -64,9 +64,9 @@ export default function Cart() {
     router.push("/checkout");
   };
 
-  if (!canAccess(tenant, "online_order")) {
+  if (!canAccess(config, "online_order")) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center px-6"><p className="text-muted font-bold">Online ordering disabled for {tenant.name} ({tenant.operationMode})</p></div>
+      <div className="min-h-[60vh] flex items-center justify-center px-6"><p className="text-muted font-bold">Online ordering disabled for {config.name} ({config.operationMode})</p></div>
     );
   }
 

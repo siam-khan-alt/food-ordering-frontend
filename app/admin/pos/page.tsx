@@ -4,15 +4,15 @@ import { useState, useEffect } from "react";
 import { getFoods } from "@/lib/api/food";
 import { createOrder } from "@/lib/api/orders";
 import { occupyTable } from "@/lib/qr";
-import { useTenant } from "@/context/TenantContext";
-import { canAccess } from "@/lib/tenancy";
+import { useRestaurant } from "@/context/RestaurantContext";
+import { canAccess } from "@/lib/restaurant";
 import type { Food } from "@/types";
 import Button from "@/components/common/Button";
 import { showSuccess, showError } from "@/components/common/Toast";
 import { Plus, Trash2 } from "lucide-react";
 
 export default function POSPage() {
-  const { tenant } = useTenant();
+  const { config } = useRestaurant();
   const [foods, setFoods] = useState<Food[]>([]);
   const [cart, setCart] = useState<(Food & { quantity: number })[]>([]);
   const [tableNo, setTableNo] = useState("T1");
@@ -23,8 +23,8 @@ export default function POSPage() {
     getFoods().then(setFoods);
   }, []);
 
-  if (!canAccess(tenant, "pos")) {
-    return <div className="p-6 text-center text-muted">POS disabled for {tenant.name} ({tenant.operationMode})</div>;
+  if (!canAccess(config, "pos")) {
+    return <div className="p-6 text-center text-muted">POS disabled for {config.name} ({config.operationMode})</div>;
   }
 
   const addToCart = (f: Food) => {
@@ -44,7 +44,7 @@ export default function POSPage() {
     try {
       const { order } = await createOrder(items, customer);
       // mark table occupied if table mode
-      if (canAccess(tenant, "table")) occupyTable(tableNo, tenant.slug);
+      if (canAccess(config, "table")) occupyTable(tableNo);
       showSuccess(`Order ${order._id.slice(-8)} placed — Table ${tableNo} — ৳${total} ${payment}`);
       setCart([]);
     } catch (e) {

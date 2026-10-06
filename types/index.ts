@@ -46,8 +46,7 @@ export interface CustomerDetails {
   orders: Order[];
 }
 
-export interface Tenant {
-  _id: string;
+export interface RestaurantConfig {
   slug: string;
   name: string;
   logo?: string;
@@ -56,8 +55,7 @@ export interface Tenant {
   operationMode: OperationMode;
   modules: ModuleKey[];
   status: "active" | "suspended";
-  ownerEmail: string;
-  createdAt: string;
+  ownerEmail?: string;
 }
 
 export interface TableSession {
@@ -65,5 +63,4 @@ export interface TableSession {
   token: string;
   expiresAt: string;
   occupied: boolean;
-  tenantSlug: string;
 }

@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { getAllOrders, updateOrderStatus } from "@/lib/api/orders";
-import { useTenant } from "@/context/TenantContext";
-import { canAccess } from "@/lib/tenancy";
+import { useRestaurant } from "@/context/RestaurantContext";
+import { canAccess } from "@/lib/restaurant";
 import type { Order } from "@/types";
 import Button from "@/components/common/Button";
 
 export default function KitchenPage() {
-  const { tenant } = useTenant();
+  const { config } = useRestaurant();
   const [orders, setOrders] = useState<Order[]>([]);
 
   const fetch = async () => setOrders(await getAllOrders());
@@ -19,7 +19,7 @@ export default function KitchenPage() {
     return () => clearInterval(id);
   }, []);
 
-  if (!canAccess(tenant, "kds")) return <div className="p-6 text-center text-muted">KDS disabled for {tenant.operationMode}</div>;
+  if (!canAccess(config, "kds")) return <div className="p-6 text-center text-muted">KDS disabled for {config.operationMode}</div>;
 
   const cols: { label: string; status: Order["orderStatus"] }[] = [
     { label: "Placed", status: "placed" },
@@ -29,7 +29,7 @@ export default function KitchenPage() {
 
   return (
     <div>
-      <h2 className="text-xl font-black mb-6">Kitchen Display — {tenant.name}</h2>
+      <h2 className="text-xl font-black mb-6">Kitchen Display — {config.name}</h2>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {cols.map((c) => (
           <div key={c.status} className="bg-card-bg border border-card-border rounded-2xl p-4">
