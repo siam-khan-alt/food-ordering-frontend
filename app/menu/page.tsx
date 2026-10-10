@@ -1,134 +1,96 @@
 "use client";
-import { useSearchParams } from "next/navigation";
-import type { Food } from "@/types";
-import { useState, useEffect } from "react";
-import { Search, SlidersHorizontal, ArrowUpDown } from "lucide-react";
+
+import { useEffect, useState } from "react";
+import { useRestaurant } from "@/context/RestaurantContext";
 import { getFoods } from "@/lib/api/food";
-import FoodCard from "@/components/food/FoodCard";
-import CustomSelect from "@/components/common/CustomSelect";
-import { showSuccess, showError } from "@/components/common/Toast";
-import { useCart } from "@/context/CartContext";
+import { getPackages, effectivePrice } from "@/lib/api/packages";
+import type { Food, Package } from "@/types";
+import { BadgePercent, Package as PkgIcon, MapPin, Phone } from "lucide-react";
 
-export default function Menu() {
-  const { addToCart } = useCart();
+/** Public menu — QR scan / customer: ajke ki ase + offer. No login. */
+export default function PublicMenuPage() {
+  const { config } = useRestaurant();
   const [foods, setFoods] = useState<Food[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [sortOrder, setSortOrder] = useState("default");
-
-  const searchParams = useSearchParams();
-  useEffect(() => {
-    const categoryParam = searchParams.get("category");
-    if (categoryParam) setSelectedCategory(categoryParam);
-  }, [searchParams]);
+  const [packages, setPackages] = useState<Package[]>([]);
+  const [cat, setCat] = useState("all");
 
   useEffect(() => {
-    const fetchFoods = async () => {
-      try {
-        const data = await getFoods();
-        setFoods(data);
-      } catch (err) {
-        showError("Failed to load menu");
-        console.error((err as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFoods();
+    getFoods().then((f) => setFoods(f.filter((x) => x.available !== false))).catch(() => {});
+    getPackages(true).then(setPackages).catch(() => {});
   }, []);
 
-  const handleAddToCart = (food: Food) => {
-    addToCart(food);
-    showSuccess(`${food.name} added to cart!`);
-  };
-
-  const categories = ["All", ...new Set(foods.map((food) => food.category))];
-  const categoryOptions = categories.map((cat) => ({ value: cat, label: cat }));
-
-  const sortOptions = [
-    { value: "default", label: "Sort by" },
-    { value: "lowToHigh", label: "Price: Low to High" },
-    { value: "highToLow", label: "Price: High to Low" },
-  ];
-
-  const filteredFoods = foods
-    .filter((food) =>
-      food.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .filter((food) =>
-      selectedCategory === "All" ? true : food.category === selectedCategory
-    )
-    .sort((a, b) => {
-      if (sortOrder === "lowToHigh") return a.price - b.price;
-      if (sortOrder === "highToLow") return b.price - a.price;
-      return 0;
-    });
-
-  if (loading) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <p className="text-muted font-bold">Loading menu...</p>
-      </div>
-    );
-  }
+  const foodName = (id: string) => foods.find((f) => f._id === id)?.name || "item";
+  const cats = ["all", ...new Set(foods.map((f) => f.category))];
+  const shown = foods.filter((f) => (cat === "all" ? true : f.category === cat));
 
   return (
     <div className="container mx-auto px-6 lg:px-16 py-10">
       <div className="text-center mb-8">
-        <span className="inline-flex items-center gap-2 bg-brand/10 text-brand text-xs font-black tracking-widest uppercase px-3 py-1.5 rounded-full border border-brand/20 mb-3">
-          Fresh & Hot, Just for You
-        </span>
-        <h1 className="text-3xl sm:text-4xl font-black text-text-main">
-          Explore Our <span className="text-brand ">Delicious</span> Menu
-        </h1>
-        <p className="text-muted text-sm mt-2 max-w-md mx-auto">
-          Handpicked flavors crafted to satisfy every craving, delivered fresh
-          and fast.
-        </p>
+        <p className="text-xs font-black tracking-widest uppercase text-brand mb-2">{config.name}</p>
+        <h1 className="text-3xl sm:text-4xl font-black">Ajker <span className="text-brand">Menu</span></h1>
+        <p className="text-muted text-sm mt-2">Ja ase tai — sesh item ekhane dekhabe na</p>
+        {(config.address || config.phone) && (
+          <p className="text-xs text-muted mt-2 flex items-center justify-center gap-3">
+            {config.address && <span className="inline-flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{config.address}</span>}
+            {config.phone && <span className="inline-flex items-center gap-1"><Phone className="w-3.5 h-3.5" />{config.phone}</span>}
+          </p>
+        )}
       </div>
 
-      <div className="flex flex-col md:flex-row gap-3 mb-8">
-        <div className="flex-1 relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-          <input
-            type="text"
-            placeholder="Search food..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 rounded-xl bg-card-bg border border-card-border text-text-main placeholder-muted focus:outline-none focus:border-brand/50 transition"
-          />
+      {packages.length > 0 && (
+        <div className="mb-10">
+          <p className="inline-flex items-center gap-2 bg-red-500/10 text-red-500 text-xs font-black tracking-widest uppercase px-3 py-1.5 rounded-full border border-red-500/20 mb-4">
+            <BadgePercent className="w-4 h-4" /> Package & Offer
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {packages.map((p) => {
+              const hasOffer = p.offerPrice && Number(p.offerPrice) > 0;
+              return (
+                <div key={p._id} className="bg-card-bg border border-card-border rounded-2xl p-5">
+                  <div className="flex items-center gap-2 mb-1">
+                    <PkgIcon className="w-4 h-4 text-brand" />
+                    <p className="font-black flex-1">{p.name}</p>
+                    {hasOffer && p.offerNote && (
+                      <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-red-500 text-white uppercase">{p.offerNote}</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted mb-3">{p.items.map((it) => `${foodName(it.foodId)} x${it.qty}`).join(" + ")}</p>
+                  <p className="font-black">
+                    {hasOffer && <span className="text-sm text-muted line-through mr-2">৳{p.price}</span>}
+                    <span className="text-brand text-xl">৳{effectivePrice(p)}</span>
+                  </p>
+                </div>
+              );
+            })}
+          </div>
         </div>
+      )}
 
-        <CustomSelect
-          icon={<SlidersHorizontal className="w-4 h-4 text-brand" />}
-          value={selectedCategory}
-          options={categoryOptions}
-          onChange={setSelectedCategory}
-        />
-
-        <CustomSelect
-          icon={<ArrowUpDown className="w-4 h-4 text-brand" />}
-          value={sortOrder}
-          options={sortOptions}
-          onChange={setSortOrder}
-        />
+      <div className="flex flex-wrap justify-center gap-2 mb-6">
+        {cats.map((c) => (
+          <button key={c} onClick={() => setCat(c)} className={`px-4 py-1.5 rounded-full text-xs font-black border ${cat === c ? "bg-brand text-white border-brand" : "bg-card-bg border-card-border text-muted"}`}>
+            {c === "all" ? "Sob" : c}
+          </button>
+        ))}
       </div>
 
-      {filteredFoods.length === 0 ? (
-        <p className="text-center text-muted">No food items found.</p>
+      {shown.length === 0 ? (
+        <p className="text-center text-muted">Ajke ei khate kichu nai.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredFoods.map((food) => (
-            <FoodCard
-              key={food._id}
-              food={food}
-              onAddToCart={handleAddToCart}
-            />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {shown.map((f) => (
+            <div key={f._id} className="bg-card-bg border border-card-border rounded-2xl p-3">
+              <img src={f.image || "/placeholder-food.png"} alt={f.name} className="w-full h-28 object-cover rounded-xl mb-2" onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder-food.png"; }} />
+              <p className="font-bold text-sm">{f.name}</p>
+              <div className="flex justify-between items-center mt-1">
+                <span className="text-[11px] text-muted">{f.category}</span>
+                <span className="font-black text-brand">৳{f.price}</span>
+              </div>
+            </div>
           ))}
         </div>
       )}
+      <p className="text-center text-xs text-muted mt-8">Dam poriborton hote pare — dokane ese confirm korun.</p>
     </div>
   );
 }

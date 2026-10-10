@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
-const DASHBOARD_PREFIXES = ["/admin", "/super-admin"];
+const DASHBOARD_PREFIXES = ["/admin"];
 
 /** Shop chrome only — dashboard routes render their own isolated shell. */
 export default function AppChrome({ children }: { children: React.ReactNode }) {

@@ -9,15 +9,12 @@ function getStoredUsers(): (User & { password: string })[] {
   if (saved) {
     try {
       const stored = JSON.parse(saved) as (User & { password: string })[];
-      // merge: ensure new seed roles (e.g. staff) exist even with old cache
-      let changed = false;
-      for (const seed of mockUsers) {
-        if (!stored.find((u) => u.email === seed.email)) {
-          stored.push(seed);
-          changed = true;
-        }
+      // reset old cache if it still has super_admin/customer/staff roles
+      const valid = stored.every((u) => u.role === "admin" || u.role === "cashier");
+      if (!valid) {
+        localStorage.setItem("mock_users", JSON.stringify(mockUsers));
+        return [...mockUsers];
       }
-      if (changed) localStorage.setItem("mock_users", JSON.stringify(stored));
       return stored;
     } catch {
       return [...mockUsers];
@@ -25,10 +22,6 @@ function getStoredUsers(): (User & { password: string })[] {
   }
   localStorage.setItem("mock_users", JSON.stringify(mockUsers));
   return [...mockUsers];
-}
-
-function setStoredUsers(users: (User & { password: string })[]) {
-  if (typeof window !== "undefined") localStorage.setItem("mock_users", JSON.stringify(users));
 }
 
 export async function login(data: { email: string; password: string }): Promise<{ user: User; token: string }> {
@@ -39,23 +32,6 @@ export async function login(data: { email: string; password: string }): Promise<
   const { password: _pw, ...user } = found;
   const token = `mock-jwt-${Date.now()}-${user._id}`;
   return { user, token };
-}
-
-export async function register(data: { name: string; email: string; password: string }): Promise<{ message: string }> {
-  await delay();
-  const users = getStoredUsers();
-  if (users.find((u) => u.email === data.email)) throw new Error("Email already exists");
-  const newUser: User & { password: string } = {
-    _id: `u_${Date.now()}`,
-    name: data.name,
-    email: data.email,
-    role: "customer",
-    createdAt: new Date().toISOString(),
-    password: data.password,
-  };
-  const updated = [...users, newUser];
-  setStoredUsers(updated);
-  return { message: "User created" };
 }
 
 export function getStoredAuthUser(): User | null {

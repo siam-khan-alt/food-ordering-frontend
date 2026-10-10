@@ -70,9 +70,7 @@ export default function DashboardShell({
   const dotCls = accent === "brand" ? "bg-brand" : "bg-violet-500";
 
   const isActive = (href: string) =>
-    href === "/admin" || href === "/super-admin"
-      ? pathname === href
-      : pathname.startsWith(href);
+    href === "/admin" ? pathname === href : pathname.startsWith(href);
 
   const handleLogout = () => {
     showConfirm("Logout from dashboard?", () => {

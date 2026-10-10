@@ -37,3 +37,21 @@
 .scrollbar-hide {
   scrollbar-width: none;
 }
+
+/* Bill print — shudhu receipt print hobe, baki sob lukano */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #bill-print,
+  #bill-print * {
+    visibility: visible;
+  }
+  #bill-print {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    margin: 0 auto;
+  }
+}

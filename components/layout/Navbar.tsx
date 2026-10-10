@@ -5,21 +5,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
-import { useCart } from "@/context/CartContext";
 import { useRestaurant } from "@/context/RestaurantContext";
-import { canAccess } from "@/lib/restaurant";
-import { Sun, Moon, ShoppingCart, LogOut, Menu, X } from "lucide-react";
+import { Sun, Moon, LogOut, Menu, X } from "lucide-react";
 import Button from "@/components/common/Button";
 import { showConfirm } from "@/components/common/Toast";
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
-  const { totalItems } = useCart();
   const { config } = useRestaurant();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const showOnline = canAccess(config, "online_order");
 
   const navLinkClass = (href: string) =>
     `relative text-sm font-bold transition py-1 flex items-center gap-1.5 ${
@@ -28,15 +24,13 @@ export default function Navbar() {
         : "text-text-main hover:text-brand"
     }`;
 
-  const NavItem = ({ href, label }: { href: string; label: string }) => {
-    const active = pathname === href;
-    return (
-      <Link href={href} className={navLinkClass(href)} onClick={() => setMobileMenuOpen(false)}>
-        {active && <img src="/logo.png" alt="" className="w-4 h-4 object-contain" />}
-        <span>{label}</span>
-      </Link>
-    );
-  };
+  const NavItem = ({ href, label }: { href: string; label: string }) => (
+    <Link href={href} className={navLinkClass(href)} onClick={() => setMobileMenuOpen(false)}>
+      <span>{label}</span>
+    </Link>
+  );
+
+  const isStaff = user?.role === "admin" || user?.role === "cashier";
 
   return (
     <header className="sticky top-0 z-50 bg-bg-main border-b border-card-border">
@@ -50,24 +44,12 @@ export default function Navbar() {
 
         <div className="hidden md:flex items-center space-x-8">
           <NavItem href="/" label="Home" />
-          {showOnline && <NavItem href="/menu" label="Menu" />}
-          {showOnline && user?.role === "customer" && <NavItem href="/my-orders" label="My Orders" />}
-          {user?.role === "admin" && <NavItem href="/admin" label="Admin Panel" />}
-          {user?.role === "super_admin" && <NavItem href="/super-admin" label="Super Admin" />}
+          <NavItem href="/menu" label="Menu" />
+          {isStaff && <NavItem href="/admin" label={user?.role === "cashier" ? "Cashier Panel" : "Admin Panel"} />}
         </div>
 
         <div className="flex items-center space-x-3">
           <span className="hidden lg:block text-xs font-bold text-muted">{config.name}</span>
-          {showOnline && (!user || user?.role === "customer") && (
-            <Link href="/cart" className="relative">
-              <Button variant="icon" icon={<ShoppingCart className="w-5 h-5" />} aria-label="Cart" />
-              {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-brand text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-bg-main">
-                  {totalItems}
-                </span>
-              )}
-            </Link>
-          )}
           <Button
             variant="icon"
             onClick={toggleTheme}
@@ -96,20 +78,12 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden flex flex-col space-y-4 px-6 pb-4 border-t border-card-border pt-4">
           <NavItem href="/" label="Home" />
-          {showOnline && <NavItem href="/menu" label="Menu" />}
-          {showOnline && user?.role === "customer" && <NavItem href="/my-orders" label="My Orders" />}
-          {user?.role === "admin" && <NavItem href="/admin" label="Admin Panel" />}
-          {user?.role === "super_admin" && <NavItem href="/super-admin" label="Super Admin" />}
-
+          <NavItem href="/menu" label="Menu" />
+          {isStaff && <NavItem href="/admin" label="Admin Panel" />}
           {user ? (
             <Button
               variant="secondary"
-              onClick={() =>
-                showConfirm("Are you sure you want to logout?", () => {
-                  logout();
-                  setMobileMenuOpen(false);
-                })
-              }
+              onClick={() => showConfirm("Are you sure you want to logout?", () => { logout(); setMobileMenuOpen(false); })}
               icon={<LogOut className="w-4 h-4" />}
               className="w-full justify-start px-4 py-2.5"
             >

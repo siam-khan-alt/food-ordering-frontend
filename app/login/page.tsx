@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { login as apiLogin } from "@/lib/api/auth";
 
@@ -20,15 +19,13 @@ export default function Login() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const quickLogin = (type: "customer" | "admin" | "super_admin" | "staff") => {
+  const quickLogin = (type: "admin" | "cashier") => {
     const creds = {
-      customer: { email: "siam@test.com", password: "123456", label: "Customer" },
       admin: { email: "admin@test.com", password: "admin123", label: "Admin" },
-      super_admin: { email: "superadmin@bitebox.com", password: "super123", label: "Super Admin" },
-      staff: { email: "staff@test.com", password: "staff123", label: "Staff" },
+      cashier: { email: "cashier@test.com", password: "cashier123", label: "Cashier" },
     }[type];
     setFormData({ email: creds.email, password: creds.password });
-    showSuccess(`Demo ${creds.label} credentials filled! Click Login.`);
+    showSuccess(`Demo ${creds.label} filled! Click Login.`);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,17 +36,9 @@ export default function Login() {
     try {
       const res = await apiLogin(formData);
       login(res.user, res.token);
-      showSuccess("Logged in successfully!");
-
-      if (res.user.role === "admin") {
-        router.push("/admin");
-      } else if (res.user.role === "super_admin") {
-        router.push("/super-admin");
-      } else if (res.user.role === "staff") {
-        router.push("/admin/pos");
-      } else {
-        router.push("/");
-      }
+      showSuccess("Logged in!");
+      if (res.user.role === "cashier") router.push("/admin/pos");
+      else router.push("/admin");
     } catch (err) {
       const message = (err as Error).message || "Login failed";
       setError(message);
@@ -62,9 +51,8 @@ export default function Login() {
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-6">
       <div className="w-full max-w-md bg-card-bg border border-card-border rounded-2xl p-8 shadow-xl">
-        <h2 className="text-2xl font-black text-text-main mb-6 text-center">
-          Welcome Back
-        </h2>
+        <h2 className="text-2xl font-black text-text-main mb-1 text-center">Dokan Login</h2>
+        <p className="text-center text-sm text-muted mb-6">Admin ba Cashier — 2 ta role e shesh</p>
 
         {error && (
           <div className="bg-red-500/10 border border-red-500/30 text-red-500 text-sm p-3 rounded-xl mb-4">
@@ -73,76 +61,21 @@ export default function Login() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label="Email"
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="you@example.com"
-            required
-          />
-          <Input
-            label="Password"
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="••••••"
-            required
-          />
-
-          <Button
-            type="submit"
-            variant="primary"
-            className="w-full justify-center"
-            disabled={loading}
-          >
+          <Input label="Email" type="email" name="email" value={formData.email} onChange={handleChange} placeholder="you@example.com" required />
+          <Input label="Password" type="password" name="password" value={formData.password} onChange={handleChange} placeholder="••••••" required />
+          <Button type="submit" variant="primary" className="w-full justify-center" disabled={loading}>
             {loading ? "Logging in..." : "Login"}
           </Button>
         </form>
 
         <div className="grid grid-cols-2 gap-3 mt-4">
-          <Button
-            type="button"
-            variant="secondary"
-            className="justify-center text-xs"
-            onClick={() => quickLogin("customer")}
-          >
-            Demo Customer
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            className="justify-center text-xs"
-            onClick={() => quickLogin("admin")}
-          >
+          <Button type="button" variant="secondary" className="justify-center text-xs" onClick={() => quickLogin("admin")}>
             Demo Admin
           </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            className="justify-center text-xs"
-            onClick={() => quickLogin("super_admin")}
-          >
-            Demo Super Admin
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            className="justify-center text-xs"
-            onClick={() => quickLogin("staff")}
-          >
-            Demo Staff
+          <Button type="button" variant="secondary" className="justify-center text-xs" onClick={() => quickLogin("cashier")}>
+            Demo Cashier
           </Button>
         </div>
-
-        <p className="text-center text-sm text-muted mt-6">
-          Don't have an account?{" "}
-          <Link href="/register" className="text-brand font-bold hover:underline">
-            Register
-          </Link>
-        </p>
       </div>
     </div>
   );

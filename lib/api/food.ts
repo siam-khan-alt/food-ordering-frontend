@@ -36,6 +36,7 @@ export async function addFood(data: { name: string; category: string; price: str
     category: data.category,
     price: Number(data.price),
     image: data.image || "/placeholder-food.png",
+    available: true,
     createdAt: new Date().toISOString(),
   };
   const updated = [...foods, newFood];
@@ -43,7 +44,7 @@ export async function addFood(data: { name: string; category: string; price: str
   return newFood;
 }
 
-export async function updateFood(id: string, data: { name?: string; category?: string; price?: string | number; image?: string }): Promise<Food> {
+export async function updateFood(id: string, data: { name?: string; category?: string; price?: string | number; image?: string; available?: boolean }): Promise<Food> {
   await delay();
   const foods = getStoredFoods();
   const idx = foods.findIndex((f) => f._id === id);
@@ -54,6 +55,7 @@ export async function updateFood(id: string, data: { name?: string; category?: s
     category: data.category ?? foods[idx].category,
     price: data.price !== undefined ? Number(data.price) : foods[idx].price,
     image: data.image ?? foods[idx].image,
+    available: data.available ?? (foods[idx].available !== false),
   };
   foods[idx] = updated;
   setStoredFoods(foods);

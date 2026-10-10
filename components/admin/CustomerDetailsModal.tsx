@@ -71,7 +71,7 @@ export default function CustomerDetailsModal({ customerId, isOpen, onClose }: { 
                 <div key={order._id} className="bg-bg-main rounded-xl p-3 flex justify-between items-center text-sm">
                   <div>
                     <p className="font-bold text-text-main">#{order._id.slice(-8)}</p>
-                    <p className="text-xs text-muted">{order.orderStatus.toUpperCase()}</p>
+                    <p className="text-xs text-muted">{order.orderStatus.toUpperCase()}{(order.discount || 0) > 0 ? ` • ৳${order.discount} char` : ""}</p>
                   </div>
                   <p className="font-black text-brand">৳{order.totalAmount}</p>
                 </div>

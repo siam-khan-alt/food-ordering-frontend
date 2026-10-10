@@ -3,13 +3,12 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
-import { CartProvider } from "@/context/CartContext";
 import { RestaurantProvider } from "@/context/RestaurantContext";
 import AppChrome from "@/components/layout/AppChrome";
 
 export const metadata: Metadata = {
-  title: "BiteBox — Food Ordering",
-  description: "Delicious food, delivered in minutes",
+  title: "BiteBox — Dokan POS",
+  description: "Choto hotel er jonno simple POS + Hisab",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -19,10 +18,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <RestaurantProvider>
             <AuthProvider>
-              <CartProvider>
-                <AppChrome>{children}</AppChrome>
-                <Toaster position="top-right" />
-              </CartProvider>
+              <AppChrome>{children}</AppChrome>
+              <Toaster position="top-right" />
             </AuthProvider>
           </RestaurantProvider>
         </ThemeProvider>

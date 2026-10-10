@@ -2,30 +2,43 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useRestaurant } from "@/context/RestaurantContext";
-import { canAccess } from "@/lib/restaurant";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import {
   LayoutDashboard,
   UtensilsCrossed,
   ClipboardList,
   ShoppingCart,
-  QrCode,
-  ChefHat,
+  Users,
+  CalendarCheck,
+  Receipt,
+  Calculator,
+  Package as PkgIcon,
 } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
+
+/**
+ * Choto hotel guard:
+ * - admin: sob page
+ * - cashier: dashboard, pos, orders, attendance, expenses
+ *   (NO foods, NO packages, NO staff, NO hisab)
+ */
+const CASHIER_BLOCKED = ["/admin/foods", "/admin/packages", "/admin/staff", "/admin/hisab"];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const { config } = useRestaurant();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!user) router.push("/login");
-    else if (user.role !== "admin" && user.role !== "staff") router.push("/");
-  }, [user, router]);
+    else if (user.role !== "admin" && user.role !== "cashier") router.push("/");
+    else if (user.role === "cashier" && CASHIER_BLOCKED.some((p) => pathname.startsWith(p)))
+      router.push("/admin/pos");
+  }, [user, pathname, router]);
 
-  if (!user || (user.role !== "admin" && user.role !== "staff")) {
+  if (!user || (user.role !== "admin" && user.role !== "cashier")) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg-main">
         <p className="text-muted font-bold">Checking access...</p>
@@ -33,25 +46,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  const operations = [
-    ...(canAccess(config, "pos")
-      ? [{ href: "/admin/pos", label: "POS Terminal", icon: ShoppingCart, badge: "LIVE" }]
-      : []),
-    ...(canAccess(config, "table")
-      ? [{ href: "/admin/tables", label: "Tables & QR", icon: QrCode }]
-      : []),
-    ...(canAccess(config, "kds")
-      ? [{ href: "/admin/kitchen", label: "Kitchen Display", icon: ChefHat, badge: "KDS" }]
-      : []),
-  ];
+  const isCashier = user.role === "cashier";
 
   return (
     <DashboardShell
-      eyebrow="Restaurant Admin"
+      eyebrow={isCashier ? "Cashier Panel" : "Restaurant Admin"}
       title={config.name}
-      subtitle={`${config.operationMode.replace("_", " ").toUpperCase()} mode — manage your restaurant operations`}
+      subtitle={isCashier ? "Walk-in order + hajira — simple kaj" : "Dokaner sob hisab ekhane"}
       tenantName={config.name}
-      tenantMeta={`${config.slug} • ${config.operationMode}`}
+      tenantMeta={user.role}
       accent="brand"
       sections={[
         {
@@ -59,13 +62,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           items: [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard }],
         },
         {
-          title: "Manage",
+          title: "Dokan",
           items: [
-            { href: "/admin/foods", label: "Manage Foods", icon: UtensilsCrossed },
-            { href: "/admin/orders", label: "Manage Orders", icon: ClipboardList },
+            ...(isCashier
+              ? []
+              : [
+                  { href: "/admin/foods" as const, label: "Manage Foods", icon: UtensilsCrossed },
+                  { href: "/admin/packages" as const, label: "Package + Offer", icon: PkgIcon },
+                ]),
+            { href: "/admin/orders" as const, label: "Manage Orders", icon: ClipboardList },
           ],
         },
-        ...(operations.length > 0 ? [{ title: "Operations", items: operations }] : []),
+        {
+          title: "Operations",
+          items: [
+            { href: "/admin/pos" as const, label: "POS Terminal", icon: ShoppingCart, badge: "LIVE" },
+            { href: "/admin/attendance" as const, label: "Hajira", icon: CalendarCheck },
+            { href: "/admin/expenses" as const, label: "Khoroc", icon: Receipt },
+          ],
+        },
+        ...(isCashier
+          ? []
+          : [
+              {
+                title: "Khata",
+                items: [
+                  { href: "/admin/staff" as const, label: "Staff + Beton", icon: Users },
+                  { href: "/admin/hisab" as const, label: "Hisab Nikash", icon: Calculator, badge: "NEW" },
+                ],
+              },
+            ]),
       ]}
     >
       {children}

@@ -151,7 +151,21 @@ export default function ManageFoods() {
                 <td className="p-3 text-muted">{food.category}</td>
                 <td className="p-3 font-bold text-brand">৳{food.price}</td>
                 <td className="p-3">
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center">
+                    <button
+                      onClick={async () => {
+                        try {
+                          await updateFood(food._id, { available: food.available === false });
+                          showSuccess(food.available === false ? `${food.name} ajke ase!` : `${food.name} sesh!`);
+                          fetchFoods();
+                        } catch (err) {
+                          showError("Failed to update");
+                        }
+                      }}
+                      className={`text-[11px] font-black px-2.5 py-1.5 rounded-full border ${food.available === false ? "bg-red-500/10 text-red-500 border-red-500/30" : "bg-accent/10 text-accent border-accent/30"}`}
+                    >
+                      {food.available === false ? "Sesh" : "Ase"}
+                    </button>
                     <button onClick={() => openEditForm(food)} className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-lg">
                       <Pencil className="w-4 h-4" />
                     </button>

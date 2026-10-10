@@ -1,4 +1,4 @@
-import type { Order, OrderStatus, CustomerDetails, User } from "@/types";
+import type { Food, Order, OrderStatus, OrderType, CustomerDetails, User } from "@/types";
 import { seedOrders } from "@/lib/mocks/orders";
 import { getFoodById } from "./food";
 import { mockUsers } from "@/lib/mocks/users";
@@ -24,24 +24,39 @@ function setStoredOrders(orders: Order[]) {
   if (typeof window !== "undefined") localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
 }
 
-export async function createOrder(items: { foodItemId: string; quantity: number }[], customer: Pick<User, "_id" | "name" | "email">): Promise<{ order: Order }> {
+export async function createOrder(
+  items: { foodItemId: string; quantity: number; label?: string; price?: number }[],
+  customer: Pick<User, "_id" | "name" | "email">,
+  opts?: { orderStatus?: OrderStatus; orderType?: OrderType; discount?: number }
+): Promise<{ order: Order }> {
   await delay();
   const orders = getStoredOrders();
-  let total = 0;
+  let subtotal = 0;
   const orderItems = items.map((it) => {
     const food = getFoodById(it.foodItemId);
-    if (!food) throw new Error(`Food ${it.foodItemId} not found`);
-    total += food.price * it.quantity;
-    return { foodItem: food, quantity: it.quantity, price: food.price };
+    if (food) {
+      subtotal += food.price * it.quantity;
+      return { foodItem: food, quantity: it.quantity, price: food.price };
+    }
+    // package line — menu te nai, POS theke nam+dam asbe (package venge dekhabo na)
+    if (!it.label || it.price === undefined) throw new Error(`Item ${it.foodItemId} not found`);
+    const price = Math.max(0, Number(it.price));
+    const pseudo: Food = { _id: it.foodItemId, name: it.label, category: "Package", price, image: "", available: true };
+    subtotal += price * it.quantity;
+    return { foodItem: pseudo, quantity: it.quantity, price };
   });
+  // total e char — 0 theke subtotal porjonto
+  const discount = Math.min(Math.max(0, Number(opts?.discount) || 0), subtotal);
 
   const order: Order = {
     _id: `order_${Date.now()}`,
     customer,
     items: orderItems,
-    totalAmount: total,
-    orderStatus: "placed",
+    totalAmount: subtotal - discount,
+    discount,
+    orderStatus: opts?.orderStatus || "placed",
     paymentStatus: "paid",
+    orderType: opts?.orderType || "dine_in",
     createdAt: new Date().toISOString(),
   };
   const updated = [...orders, order];

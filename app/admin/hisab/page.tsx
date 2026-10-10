@@ -1,0 +1,111 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { getAllOrders } from "@/lib/api/orders";
+import { getExpenses } from "@/lib/api/expenses";
+import { getSalaryPayments } from "@/lib/api/salary";
+import { getStaff } from "@/lib/api/staff";
+import { getAttendanceByMonth } from "@/lib/api/attendance";
+import { monthPayable } from "@/lib/salary";
+import type { Order, Expense, SalaryPayment, StaffMember } from "@/types";
+import Link from "next/link";
+import Button from "@/components/common/Button";
+
+const today = () => new Date().toISOString().slice(0, 10);
+const thisMonth = () => new Date().toISOString().slice(0, 7);
+
+export default function HisabPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [salary, setSalary] = useState<SalaryPayment[]>([]);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
+
+  useEffect(() => {
+    if (user && user.role !== "admin") router.push("/admin/pos");
+  }, [user, router]);
+
+  useEffect(() => {
+    (async () => {
+      const m = thisMonth();
+      const [o, e, s, st, a] = await Promise.all([getAllOrders(), getExpenses(), getSalaryPayments(m), getStaff(), getAttendanceByMonth(m)]);
+      setOrders(o);
+      setExpenses(e);
+      setSalary(s);
+      setStaff(st.filter((x) => x.active));
+      setAtt(a);
+    })();
+  }, []);
+
+  const [att, setAtt] = useState<import("@/types").Attendance[]>([]);
+
+  if (user?.role !== "admin") return <p className="text-muted font-bold">Cashier der access nai — admin login lagbe.</p>;
+
+  const t = today();
+  const m = thisMonth();
+  const paidOrders = (list: Order[]) => list.filter((o) => o.paymentStatus === "paid");
+
+  const todaySale = paidOrders(orders).filter((o) => o.createdAt.slice(0, 10) === t).reduce((s, o) => s + o.totalAmount, 0);
+  const todayChar = paidOrders(orders).filter((o) => o.createdAt.slice(0, 10) === t).reduce((s, o) => s + (o.discount || 0), 0);
+  const todayExp = expenses.filter((e) => e.date === t && e.category !== "salary").reduce((s, e) => s + e.amount, 0);
+  const todaySal = salary.filter((p) => p.date === t).reduce((s, p) => s + p.amount, 0);
+  const todayCash = todaySale - todayExp - todaySal;
+
+  const monthSale = paidOrders(orders).filter((o) => o.createdAt.startsWith(m)).reduce((s, o) => s + o.totalAmount, 0);
+  const monthChar = paidOrders(orders).filter((o) => o.createdAt.startsWith(m)).reduce((s, o) => s + (o.discount || 0), 0);
+  const monthExp = expenses.filter((e) => e.date.startsWith(m) && e.category !== "salary").reduce((s, e) => s + e.amount, 0);
+  const monthSalPaid = salary.reduce((s, p) => s + p.amount, 0);
+  const monthPayableTotal = staff.reduce((s, x) => s + monthPayable(x, att), 0);
+  const monthDue = monthPayableTotal - monthSalPaid;
+  const monthProfit = monthSale - monthExp - monthSalPaid;
+
+  const cards = [
+    { label: "Ajker sale", value: `৳${todaySale}`, sub: `Khoroc ৳${todayExp} • Beton ৳${todaySal}${todayChar > 0 ? ` • Char ৳${todayChar}` : ""}` },
+    { label: "Ajker cash (hate)", value: `৳${todayCash}`, sub: todayCash >= 0 ? "Hisab milse ✓" : "Minus! check korun", hot: todayCash < 0 },
+    { label: "Ei masher sale", value: `৳${monthSale}`, sub: `Khoroc ৳${monthExp} • Beton deya ৳${monthSalPaid}${monthChar > 0 ? ` • Char ৳${monthChar}` : ""}` },
+    { label: "Mash seshe lav (ekhon porjonto)", value: `৳${monthProfit}`, sub: `Beton baki ৳${monthDue}`, hot: monthProfit < 0 },
+  ];
+
+  return (
+    <div>
+      <h2 className="text-xl font-black mb-1">Hisab Nikash</h2>
+      <p className="text-xs text-muted mb-6">Sale (POS) minus khoroc minus beton — khata close.</p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        {cards.map((c) => (
+          <div key={c.label} className={`bg-card-bg border rounded-2xl p-5 ${c.hot ? "border-red-500/40" : "border-card-border"}`}>
+            <p className="text-xs text-muted font-bold uppercase tracking-wide">{c.label}</p>
+            <p className={`text-2xl font-black mt-1 ${c.hot ? "text-red-500" : "text-text-main"}`}>{c.value}</p>
+            <p className="text-xs text-muted mt-1">{c.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-card-bg border border-card-border rounded-2xl p-5 mb-4">
+        <h3 className="font-black text-sm mb-3">Staff beton baki ({m})</h3>
+        <div className="space-y-2 text-sm">
+          {staff.map((s) => {
+            const pay = monthPayable(s, att);
+            const paid = salary.filter((p) => p.staffId === s._id).reduce((x, p) => x + p.amount, 0);
+            return (
+              <div key={s._id} className="flex justify-between">
+                <span>{s.name}</span>
+                <span className="text-muted">Paoa ৳{pay} • Deya ৳{paid} • <b className={pay - paid > 0 ? "text-red-500" : "text-accent"}>Baki ৳{pay - paid}</b></span>
+              </div>
+            );
+          })}
+          {staff.length === 0 && <p className="text-xs text-muted">Staff nai.</p>}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <Link href="/admin/staff"><Button variant="secondary" className="text-xs">Staff khata</Button></Link>
+        <Link href="/admin/attendance"><Button variant="secondary" className="text-xs">Hajira</Button></Link>
+        <Link href="/admin/expenses"><Button variant="secondary" className="text-xs">Khoroc</Button></Link>
+      </div>
+    </div>
+  );
+}

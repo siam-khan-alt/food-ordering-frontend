@@ -1,10 +1,7 @@
-export type Role = "customer" | "admin" | "super_admin" | "staff";
-export type OperationMode = "online_only" | "pos_only" | "hybrid";
-export type ModuleKey = "online_order" | "pos" | "table" | "kds" | "staff" | "reports" | "coupons";
+export type Role = "admin" | "cashier";
 export type OrderStatus = "placed" | "preparing" | "delivered" | "cancelled";
 export type PaymentStatus = "pending" | "paid" | "failed";
-export type OrderSource = "online" | "pos" | "qr";
-export type OrderType = "delivery" | "takeaway" | "dine_in" | "walk_in";
+export type OrderType = "dine_in" | "parcel" | "both"; // ekhane khabe | parcel nibe | 2 tai
 
 export interface User {
   _id: string;
@@ -20,6 +17,7 @@ export interface Food {
   category: string;
   price: number;
   image: string;
+  available: boolean; // ajke dokane ase kina
   createdAt?: string;
 }
 
@@ -33,9 +31,11 @@ export interface Order {
   _id: string;
   customer: Pick<User, "_id" | "name" | "email">;
   items: OrderItem[];
-  totalAmount: number;
+  totalAmount: number; // final payable (subtotal - discount)
+  discount: number; // koto taka char deya hoise
   orderStatus: OrderStatus;
   paymentStatus: PaymentStatus;
+  orderType: OrderType;
   createdAt: string;
 }
 
@@ -52,15 +52,66 @@ export interface RestaurantConfig {
   logo?: string;
   address?: string;
   phone?: string;
-  operationMode: OperationMode;
-  modules: ModuleKey[];
-  status: "active" | "suspended";
-  ownerEmail?: string;
 }
 
-export interface TableSession {
-  tableNo: string;
-  token: string;
-  expiresAt: string;
-  occupied: boolean;
+// ---- Khata (staff + attendance + expense + salary) ----
+
+export interface StaffMember {
+  _id: string;
+  name: string;
+  job: string; // baburchi / helper / cashier
+  phone: string;
+  monthlySalary: number;
+  active: boolean;
+  createdAt: string;
+}
+
+export type AttendanceStatus = "present" | "absent" | "half" | "leave";
+
+export interface Attendance {
+  _id: string;
+  staffId: string;
+  date: string; // YYYY-MM-DD
+  status: AttendanceStatus;
+  createdAt: string;
+}
+
+export type ExpenseCategory = "bazar" | "salary" | "rent" | "utility" | "other";
+
+export interface Expense {
+  _id: string;
+  date: string; // YYYY-MM-DD
+  category: ExpenseCategory;
+  note: string;
+  amount: number;
+  by: string;
+  createdAt: string;
+}
+
+export interface SalaryPayment {
+  _id: string;
+  staffId: string;
+  month: string; // YYYY-MM
+  amount: number;
+  note: string;
+  date: string; // YYYY-MM-DD paid date
+  createdAt: string;
+}
+
+// ---- Package (bundle) + Offer ----
+
+export interface PackageItem {
+  foodId: string;
+  qty: number;
+}
+
+export interface Package {
+  _id: string;
+  name: string;
+  items: PackageItem[];
+  price: number; // package dam
+  offerPrice?: number; // offer thakle kom dam (0/undefined = no offer)
+  offerNote?: string; // jemon "Eid Offer"
+  active: boolean;
+  createdAt: string;
 }
