@@ -25,3 +25,6 @@ out
 *.njsproj
 *.sln
 *.sw?
+
+# TS build info
+tsconfig.tsbuildinfo
